@@ -22,19 +22,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) { refresh() }
 
-    func sleepDisabled() throws -> Bool {
+    func pmset(_ arguments: [String], asRoot: Bool = false) throws -> String {
         let process = Process()
         let pipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
-        process.arguments = ["-g"]
+        process.executableURL = URL(fileURLWithPath: asRoot ? "/usr/bin/sudo" : "/usr/bin/pmset")
+        process.arguments = (asRoot ? ["-n", "/usr/bin/pmset"] : []) + arguments
         process.standardOutput = pipe
+        process.standardError = pipe
         try process.run()
         let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
         process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw NSError(domain: "SleepSwitch", code: Int(process.terminationStatus),
+                          userInfo: [NSLocalizedDescriptionKey: output.isEmpty ? "pmset failed." : output])
+        }
+        return output
+    }
+
+    func sleepDisabled() throws -> Bool {
+        let output = try pmset(["-g"])
         let fields = output.split(separator: "\n")
             .map { $0.split(whereSeparator: { $0.isWhitespace }) }
             .first { $0.first == "SleepDisabled" }
-        guard process.terminationStatus == 0, let fields, fields.count == 2,
+        guard let fields, fields.count == 2,
               fields[1] == "0" || fields[1] == "1" else {
             throw NSError(domain: "SleepSwitch", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Could not read pmset's SleepDisabled setting."])
@@ -59,13 +69,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc func toggleSleep() {
         do {
-            let value = try sleepDisabled() ? 0 : 1
-            let script = NSAppleScript(source: "do shell script \"/usr/bin/pmset disablesleep \(value)\" with administrator privileges")!
-            var error: NSDictionary?
-            script.executeAndReturnError(&error)
-            if let error, error[NSAppleScript.errorNumber] as? Int != -128 {
-                showError(error[NSAppleScript.errorMessage] as? String ?? "Could not change the sleep setting.")
-            }
+            let value = try sleepDisabled() ? "0" : "1"
+            _ = try pmset(["disablesleep", value], asRoot: true)
         } catch {
             showError(error.localizedDescription)
         }
