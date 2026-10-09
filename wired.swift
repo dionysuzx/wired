@@ -4,7 +4,7 @@ import notify
 
 @main
 @MainActor
-final class SleepSwitch: NSObject, NSApplicationDelegate {
+final class Wired: NSObject, NSApplicationDelegate {
     let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -34,7 +34,7 @@ final class SleepSwitch: NSObject, NSApplicationDelegate {
         let disabled = (source as String) == kIOPMACPowerKey
         do {
             try setSleepDisabled(disabled)
-            status.button?.image = NSImage(systemSymbolName: disabled ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: "SleepSwitch")
+            status.button?.image = NSImage(systemSymbolName: disabled ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: "wired")
             status.button?.toolTip = disabled ? "On external power: sleep disabled" : "On battery/UPS: sleep allowed"
         } catch {
             showError(error.localizedDescription)
@@ -52,19 +52,19 @@ final class SleepSwitch: NSObject, NSApplicationDelegate {
         let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
         process.waitUntilExit()
         guard process.terminationStatus == 0 else {
-            throw NSError(domain: "SleepSwitch", code: Int(process.terminationStatus),
+            throw NSError(domain: "wired", code: Int(process.terminationStatus),
                           userInfo: [NSLocalizedDescriptionKey: output.isEmpty ? "pmset failed." : output])
         }
     }
 
     func showError(_ message: String) {
-        status.button?.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: "SleepSwitch error")
+        status.button?.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: "wired error")
         status.button?.toolTip = message
     }
 
     static func main() {
         let app = NSApplication.shared
-        let delegate = SleepSwitch()
+        let delegate = Wired()
         app.delegate = delegate
         app.setActivationPolicy(.accessory)
         withExtendedLifetime(delegate) { app.run() }

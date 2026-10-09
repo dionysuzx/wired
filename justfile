@@ -2,6 +2,7 @@ default:
     @just --list
 
 # Allow only disablesleep 0 and 1 without a password.
+# Keep the sudoers filename stable for existing installations.
 add-sudoers:
     #!/bin/sh
     set -eu
@@ -19,8 +20,8 @@ install-app:
     set -eu
     sh build.sh
     mkdir -p "$HOME/Applications"
-    if pgrep -x SleepSwitch > /dev/null; then
-        pkill -x SleepSwitch
+    if pgrep -x wired > /dev/null; then
+        pkill -x wired
     fi
-    ditto SleepSwitch.app "$HOME/Applications/SleepSwitch.app"
-    open "$HOME/Applications/SleepSwitch.app"
+    ditto wired.app "$HOME/Applications/wired.app"
+    open "$HOME/Applications/wired.app"

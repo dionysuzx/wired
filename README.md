@@ -1,4 +1,4 @@
-# SleepSwitch
+# wired
 
 Automatically sets `pmset disablesleep 1` on external power and `0` on battery/UPS.
 Runs at launch and on power-source changes. One Swift file, no polling.
@@ -10,8 +10,8 @@ Requires macOS 11+, Apple's Command Line Tools (`xcode-select --install`),
 and [just](https://just.systems/man/en/) (`brew install just`).
 
 ```sh
-git clone https://github.com/dionysuzx/SleepSwitch.git
-cd SleepSwitch
+git clone https://github.com/dionysuzx/wired.git
+cd wired
 just add-sudoers
 just install-app
 ```
