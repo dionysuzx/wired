@@ -3,7 +3,7 @@
 A native macOS menu bar app. One Swift file, no dependencies.
 
 Open **SleepSwitch.app**, click its menu bar icon, and toggle **Prevent Sleep**.
-Checked / coffee cup = prevention on. Unchecked / moon = prevention off.
+Checked / filled coffee cup = prevention on. Unchecked / outlined cup = prevention off.
 
 The toggle runs `/usr/bin/pmset disablesleep 1` or `0` through macOS's administrator
 prompt, equivalent to using `sudo`. Cancelling the prompt leaves the setting alone.

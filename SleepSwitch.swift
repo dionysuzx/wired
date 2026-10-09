@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let disabled = try sleepDisabled()
             toggle.isEnabled = true
             toggle.state = disabled ? .on : .off
-            status.button?.image = NSImage(systemSymbolName: disabled ? "cup.and.saucer.fill" : "moon.zzz", accessibilityDescription: "Prevent Sleep")
+            status.button?.image = NSImage(systemSymbolName: disabled ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: "Prevent Sleep")
             status.button?.toolTip = disabled ? "Sleep prevention is on" : "Sleep prevention is off"
         } catch {
             toggle.isEnabled = false
