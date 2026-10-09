@@ -24,13 +24,20 @@ app. Run it again to rebuild and update the installation.
 
 ## Use
 
-Open **SleepSwitch.app**, click its menu bar icon, and toggle **Prevent Sleep**.
+Open **SleepSwitch.app**. Right-click its menu bar icon to toggle sleep prevention
+directly, or left-click to open the menu and toggle **Prevent Sleep**.
 Checked / filled coffee cup = prevention on. Unchecked / outlined cup = prevention off.
 
 The toggle runs `sudo -n /usr/bin/pmset disablesleep 1` or `0`, with no password
 prompt. If it fails, run `just add-sudoers` from the project folder to set up access.
 The app reads the real setting at launch, whenever the menu opens, and after a toggle.
 It changes no other power settings. Quitting leaves the setting as it is.
+
+To print the current setting (`1` = sleep disabled, `0` = sleep allowed):
+
+```sh
+pmset -g | awk '$1 == "SleepDisabled" { print $2 }'
+```
 
 To build without installing:
 

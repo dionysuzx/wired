@@ -4,11 +4,11 @@ import AppKit
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    let menu = NSMenu()
     let toggle = NSMenuItem(title: "Prevent Sleep", action: #selector(toggleSleep), keyEquivalent: "")
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         toggle.target = self
-        let menu = NSMenu()
         menu.autoenablesItems = false
         menu.delegate = self
         menu.addItem(toggle)
@@ -16,8 +16,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let quit = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.target = NSApp
         menu.addItem(quit)
-        status.menu = menu
+        status.button?.target = self
+        status.button?.action = #selector(click(_:))
+        status.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         refresh()
+    }
+
+    @objc func click(_ button: NSStatusBarButton) {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            toggleSleep()
+        } else {
+            let bottom = button.isFlipped ? button.bounds.maxY : button.bounds.minY
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: bottom), in: button)
+        }
     }
 
     func menuWillOpen(_ menu: NSMenu) { refresh() }
