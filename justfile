@@ -1,7 +1,7 @@
 default:
     @just --list
 
-# Allow only the two sleep-toggle commands without a password.
+# Allow only disablesleep 0 and 1 without a password.
 add-sudoers:
     #!/bin/sh
     set -eu
