@@ -4,6 +4,7 @@ Automatically sets `pmset disablesleep 1` on external power and `0` on battery/U
 Runs at launch and on power-source changes. One Swift file, no polling.
 
 Filled cup = sleep disabled. Outlined cup = sleep allowed. `?` = error; hover for details.
+Right-click to disable sleep on battery; it resets on the next power-source change.
 Quitting leaves the current setting in place. Sleep follows normal macOS rules when allowed.
 
 Requires macOS 11+, Apple's Command Line Tools (`xcode-select --install`),

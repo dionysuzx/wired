@@ -6,16 +6,20 @@ import notify
 @MainActor
 final class Wired: NSObject, NSApplicationDelegate {
     let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    let menu = NSMenu()
+    var override = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let menu = NSMenu()
         let quit = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.target = NSApp
         menu.addItem(quit)
-        status.menu = menu
+        status.button?.target = self
+        status.button?.action = #selector(click(_:))
+        status.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
         var token: Int32 = 0
         let result = notify_register_dispatch(kIOPSNotifyPowerSource, &token, .main) { [weak self] _ in
+            self?.override = false
             self?.updatePower()
         }
         guard result == NOTIFY_STATUS_OK else {
@@ -25,17 +29,29 @@ final class Wired: NSObject, NSApplicationDelegate {
         updatePower()
     }
 
+    @objc func click(_ button: NSStatusBarButton) {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            override.toggle()
+            updatePower()
+        } else {
+            let bottom = button.isFlipped ? button.bounds.maxY : button.bounds.minY
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: bottom), in: button)
+        }
+    }
+
     func updatePower() {
         guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
               let source = IOPSGetProvidingPowerSourceType(snapshot)?.takeUnretainedValue() else {
             showError("Could not read the power source.")
             return
         }
-        let disabled = (source as String) == kIOPMACPowerKey
+        let wired = (source as String) == kIOPMACPowerKey
+        let disabled = wired || override
         do {
             try setSleepDisabled(disabled)
             status.button?.image = NSImage(systemSymbolName: disabled ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: "wired")
-            status.button?.toolTip = disabled ? "On external power: sleep disabled" : "On battery/UPS: sleep allowed"
+            status.button?.toolTip = wired ? "On external power: sleep disabled"
+                : override ? "Manually overridden: sleep disabled" : "On battery/UPS: sleep allowed"
         } catch {
             showError(error.localizedDescription)
         }
